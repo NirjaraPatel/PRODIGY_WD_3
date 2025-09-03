@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tic-Tac-Toe Game</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #2193b0, #6dd5ed);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    .container {
+      text-align: center;
+    }
+
+    h1 {
+      color: #fff;
+      margin-bottom: 10px;
+    }
+
+    .mode-select {
+      margin-bottom: 20px;
+    }
+
+    select {
+      padding: 8px;
+      font-size: 1rem;
+      border-radius: 5px;
+      border: none;
+    }
+
+    .board {
+      display: grid;
+      grid-template-columns: repeat(3, 100px);
+      grid-template-rows: repeat(3, 100px);
+      gap: 5px;
+      margin: 0 auto;
+    }
+
+    .cell {
+      width: 100px;
+      height: 100px;
+      background: #fff;
+      border-radius: 10px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 2.5rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    .cell:hover {
+      background: #f0f0f0;
+    }
+
+    .status {
+      margin: 20px 0;
+      font-size: 1.2rem;
+      color: #fff;
+      font-weight: bold;
+    }
+
+    button {
+      padding: 10px 20px;
+      font-size: 1rem;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      background: #fff;
+      color: #2193b0;
+      font-weight: bold;
+      transition: 0.3s;
+    }
+
+    button:hover {
+      background: #2193b0;
+      color: #fff;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Tic-Tac-Toe</h1>
+
+    <div class="mode-select">
+      <label for="mode">Choose Mode: </label>
+      <select id="mode">
+        <option value="2p">2 Players</option>
+        <option value="ai">Vs AI</option>
+      </select>
+    </div>
+
+    <div class="board" id="board">
+      <div class="cell" data-index="0"></div>
+      <div class="cell" data-index="1"></div>
+      <div class="cell" data-index="2"></div>
+      <div class="cell" data-index="3"></div>
+      <div class="cell" data-index="4"></div>
+      <div class="cell" data-index="5"></div>
+      <div class="cell" data-index="6"></div>
+      <div class="cell" data-index="7"></div>
+      <div class="cell" data-index="8"></div>
+    </div>
+
+    <div class="status" id="status">Player X's turn</div>
+    <button onclick="restartGame()">Restart Game</button>
+  </div>
+
+  <script>
+    const cells = document.querySelectorAll(".cell");
+    const statusText = document.getElementById("status");
+    const modeSelect = document.getElementById("mode");
+
+    let currentPlayer = "X";
+    let board = ["", "", "", "", "", "", "", "", ""];
+    let running = true;
+    let mode = "2p"; // default
+
+    const winConditions = [
+      [0, 1, 2],
+      [3, 4, 5],
+      [6, 7, 8],
+      [0, 3, 6],
+      [1, 4, 7],
+      [2, 5, 8],
+      [0, 4, 8],
+      [2, 4, 6]
+    ];
+
+    modeSelect.addEventListener("change", () => {
+      mode = modeSelect.value;
+      restartGame();
+    });
+
+    cells.forEach(cell => cell.addEventListener("click", cellClicked));
+
+    function cellClicked() {
+      const index = this.getAttribute("data-index");
+
+      if (board[index] !== "" || !running) return;
+
+      updateCell(this, index);
+      checkWinner();
+
+      if (mode === "ai" && running && currentPlayer === "O") {
+        setTimeout(aiMove, 500); // small delay for realism
+      }
+    }
+
+    function updateCell(cell, index) {
+      board[index] = currentPlayer;
+      cell.textContent = currentPlayer;
+    }
+
+    function changePlayer() {
+      currentPlayer = currentPlayer === "X" ? "O" : "X";
+      statusText.textContent = `Player ${currentPlayer}'s turn`;
+    }
+
+    function checkWinner() {
+      let roundWon = false;
+
+      for (let condition of winConditions) {
+        const [a, b, c] = condition;
+        if (board[a] && board[a] === board[b] && board[a] === board[c]) {
+          roundWon = true;
+          break;
+        }
+      }
+
+      if (roundWon) {
+        statusText.textContent = `Player ${currentPlayer} wins! 🎉`;
+        running = false;
+      } else if (!board.includes("")) {
+        statusText.textContent = "It's a Draw! 🤝";
+        running = false;
+      } else {
+        changePlayer();
+      }
+    }
+
+    function aiMove() {
+      let available = [];
+      board.forEach((val, i) => {
+        if (val === "") available.push(i);
+      });
+
+      if (available.length === 0) return;
+
+      let randomIndex = available[Math.floor(Math.random() * available.length)];
+      const cell = document.querySelector(`.cell[data-index='${randomIndex}']`);
+
+      updateCell(cell, randomIndex);
+      checkWinner();
+    }
+
+    function restartGame() {
+      currentPlayer = "X";
+      board = ["", "", "", "", "", "", "", "", ""];
+      running = true;
+      statusText.textContent = `Player ${currentPlayer}'s turn`;
+      cells.forEach(cell => cell.textContent = "");
+    }
+  </script>
+</body>
+</html>
